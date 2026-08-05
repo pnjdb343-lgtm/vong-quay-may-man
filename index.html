@@ -1,3 +1,13 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Vòng Quay May Mắn</title>
+</head>
+<body style="margin:0;padding:0;">
+
 <!-- 
   VÒNG QUAY MAY MẮN - 4 Ô - Phong cách hội chợ
   ==============================================
@@ -5,7 +15,8 @@
   1. Tìm dòng "const FLOW_URL = ..." bên dưới, thay bằng URL thật của Power Automate Flow (HTTP trigger) bạn đã tạo.
   2. Nếu tên/thứ tự phần thưởng trong Excel (sheet DanhMuc) khác với danh sách PRIZES bên dưới, hãy sửa lại mảng PRIZES cho khớp
      (ViTri 0,1,2,3 trong Excel PHẢI khớp đúng thứ tự index 0,1,2,3 trong mảng PRIZES).
-  3. Dán toàn bộ đoạn code này vào 1 Web Part "Embed" trên trang SharePoint.
+  3. Nếu dùng làm trang GitHub Pages độc lập: giữ nguyên toàn bộ (đã có sẵn thẻ html/head/body).
+     Nếu dán vào Web Part "Embed" của SharePoint: chỉ cần dán từ thẻ <div id="vqmm-root"> trở xuống, bỏ qua phần <html><head><body>.
 -->
 
 <div id="vqmm-root">
@@ -46,6 +57,11 @@
 </div>
 
 <style>
+  html, body {
+    width: 100%;
+    min-height: 100%;
+  }
+
   #vqmm-root {
     --vqmm-c1: #FF3B30;
     --vqmm-c2: #FFCC00;
@@ -53,8 +69,11 @@
     --vqmm-c4: #007AFF;
     --vqmm-dark: #2b1055;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    width: 100%;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
+    align-items: flex-start;
     padding: 24px 12px;
     box-sizing: border-box;
   }
@@ -154,6 +173,8 @@
   #vqmm-canvas {
     display: block;
     margin: 0 auto;
+    max-width: 100%;
+    height: auto;
     border-radius: 50%;
     box-shadow: 0 0 0 8px #fff, 0 0 0 12px var(--vqmm-c2), 0 10px 30px rgba(0,0,0,0.25);
   }
@@ -228,10 +249,10 @@
 
   // Thứ tự PHẢI khớp với cột "ViTri" (0,1,2,3) trong sheet DanhMuc của Excel
   const PRIZES = [
-    { label: "Ecode\nưu đãi", color: "#FF3B30" },
-    { label: "Quà A",         color: "#FFCC00" },
-    { label: "Quà B",         color: "#34C759" },
-    { label: "Quà C",         color: "#007AFF" }
+    { label: "Quà D", color: "#FF3B30" },
+    { label: "Quà A", color: "#FFCC00" },
+    { label: "Quà B", color: "#34C759" },
+    { label: "Quà C", color: "#007AFF" }
   ];
 
   // ==========================================================================
@@ -376,8 +397,7 @@
       spinToIndex(data.ViTriTrung, function () {
         const prize = PRIZES[data.ViTriTrung];
         resultText.textContent = (data.KetQua || prize.label.replace("\n", " "));
-        resultCode.textContent = data.MaCode ? ("Mã của bạn: " + data.MaCode) : "";
-        resultCode.style.display = data.MaCode ? "block" : "none";
+        resultCode.style.display = "none";
         overlay.style.display = "flex";
         statusEl.textContent = "";
       });
@@ -394,3 +414,6 @@
   });
 })();
 </script>
+
+</body>
+</html>
