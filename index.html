@@ -9,13 +9,14 @@
 <body style="margin:0;padding:0;">
 
 <!-- 
-  VÒNG QUAY MAY MẮN - 4 Ô - Phong cách hội chợ
-  ==============================================
+  VÒNG QUAY MAY MẮN - Phong cách hội chợ - NẠP DANH MỤC QUÀ ĐỘNG TỪ EXCEL
+  ==========================================================================
   CÁCH DÙNG:
-  1. Tìm dòng "const FLOW_URL = ..." bên dưới, thay bằng URL thật của Power Automate Flow (HTTP trigger) bạn đã tạo.
-  2. Nếu tên/thứ tự phần thưởng trong Excel (sheet DanhMuc) khác với danh sách PRIZES bên dưới, hãy sửa lại mảng PRIZES cho khớp
-     (ViTri 0,1,2,3 trong Excel PHẢI khớp đúng thứ tự index 0,1,2,3 trong mảng PRIZES).
-  3. Nếu dùng làm trang GitHub Pages độc lập: giữ nguyên toàn bộ (đã có sẵn thẻ html/head/body).
+  1. Tìm dòng "const FLOW_URL = ..." bên dưới, thay bằng URL Flow quay thưởng (Power Automate).
+  2. Tìm dòng "const DANH_MUC_URL = ..." bên dưới, thay bằng URL Flow "LayDanhMucQuaTang" (lấy danh sách quà từ Excel).
+  3. KHÔNG cần sửa tên/số lượng quà trong file này nữa — chỉ cần admin sửa trực tiếp trong Excel (sheet DanhMuc),
+     vòng quay sẽ tự động cập nhật đúng theo Excel mỗi khi có người mở trang.
+  4. Nếu dùng làm trang GitHub Pages độc lập: giữ nguyên toàn bộ (đã có sẵn thẻ html/head/body).
      Nếu dán vào Web Part "Embed" của SharePoint: chỉ cần dán từ thẻ <div id="vqmm-root"> trở xuống, bỏ qua phần <html><head><body>.
 -->
 
@@ -39,7 +40,7 @@
         <div class="vqmm-pointer">▼</div>
         <canvas id="vqmm-canvas" width="360" height="360"></canvas>
       </div>
-      <button id="vqmm-btn-quay" class="vqmm-btn vqmm-btn-quay">QUAY NGAY!</button>
+      <button id="vqmm-btn-quay" class="vqmm-btn vqmm-btn-quay" disabled>Đang tải quà...</button>
       <p id="vqmm-status" class="vqmm-status"></p>
     </div>
 
@@ -244,27 +245,28 @@
 (function () {
   // ============ CẤU HÌNH — CHỈNH LẠI CHO ĐÚNG VỚI DỰ ÁN CỦA BẠN ============
 
-  // Thay URL này bằng URL HTTP trigger thật của Power Automate Flow
+  // Thay URL này bằng URL HTTP trigger thật của Power Automate Flow (quay thưởng)
   const FLOW_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/19/workflows/853b0f555662457682bd6e7d613d7694/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=peqm4gi5K02SNX3gTgju3tArB0DgcWpBpFnquwdXr4U";
 
-  // Thứ tự PHẢI khớp với cột "ViTri" (0,1,2,3,4) trong sheet DanhMuc của Excel
-  const PRIZES = [
-    { label: "Quà D", color: "#FF3B30" },
-    { label: "Quà A", color: "#FFCC00" },
-    { label: "Quà B", color: "#34C759" },
-    { label: "Quà C", color: "#007AFF" },
-    { label: "Chúc may mắn\nlần sau", color: "#8E8E93" }
-  ];
+  // Thay URL này bằng URL Flow "LayDanhMucQuaTang" (lấy danh sách quà mới nhất từ Excel)
+  const DANH_MUC_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/00/workflows/507e4a47292f4d8bb87c8d7c2bda1628/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=YnzBPjVpJQHLdprUu9Y9IDgbEcN2ws-YekcMh0EwZ6c";
+
+  // Bảng màu gán tự động theo thứ tự ViTri — không cần sửa tay khi đổi tên/số lượng quà trong Excel
+  const BANG_MAU = ["#FF3B30", "#FFCC00", "#34C759", "#007AFF", "#8E8E93", "#AF52DE", "#FF9500", "#5AC8FA"];
+
+  // PRIZES sẽ được nạp động từ Excel khi trang tải lên (xem hàm napDanhMucQua bên dưới)
+  let PRIZES = [];
 
   // ==========================================================================
 
   const canvas = document.getElementById("vqmm-canvas");
   const ctx = canvas.getContext("2d");
   const radius = canvas.width / 2;
-  const sliceAngle = (2 * Math.PI) / PRIZES.length;
+  function getSliceAngle() { return (2 * Math.PI) / PRIZES.length; }
   let currentRotation = 0;
 
   function drawWheel(rotation) {
+    const sliceAngle = getSliceAngle();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(radius, radius);
@@ -311,12 +313,31 @@
     ctx.restore();
   }
 
-  drawWheel(0);
+  // Nạp danh sách quà mới nhất từ Excel (qua Flow LayDanhMucQuaTang) mỗi khi trang được mở
+  async function napDanhMucQua() {
+    try {
+      const res = await fetch(DANH_MUC_URL);
+      const rows = await res.json();
+      // Sắp xếp đúng theo ViTri, gán màu tự động theo bảng màu cố định
+      const sorted = rows.slice().sort((a, b) => Number(a.ViTri) - Number(b.ViTri));
+      PRIZES = sorted.map((row, i) => ({
+        label: String(row.LoaiThuong).trim(),
+        color: BANG_MAU[i % BANG_MAU.length]
+      }));
+      drawWheel(0);
+      btnQuay.disabled = false;
+      btnQuay.textContent = "QUAY NGAY!";
+      statusEl.textContent = "";
+    } catch (err) {
+      statusEl.textContent = "Không tải được danh sách quà. Vui lòng tải lại trang.";
+    }
+  }
 
   function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
 
   // Quay animation tới đúng viTriTrung (0..3) mà server đã chọn
   function spinToIndex(viTriTrung, onDone) {
+    const sliceAngle = getSliceAngle();
     const targetSliceCenter = viTriTrung * sliceAngle + sliceAngle / 2;
     // con trỏ chỉ ở góc -90deg (đỉnh), nên cần bù lại
     const pointerAngle = -Math.PI / 2;
@@ -413,6 +434,9 @@
     btnQuay.disabled = true;
     btnQuay.textContent = "Đã quay";
   });
+
+  // Nạp danh mục quà ngay khi trang vừa tải lên
+  napDanhMucQua();
 })();
 </script>
 
