@@ -247,12 +247,13 @@
   // Thay URL này bằng URL HTTP trigger thật của Power Automate Flow
   const FLOW_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/19/workflows/853b0f555662457682bd6e7d613d7694/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=peqm4gi5K02SNX3gTgju3tArB0DgcWpBpFnquwdXr4U";
 
-  // Thứ tự PHẢI khớp với cột "ViTri" (0,1,2,3) trong sheet DanhMuc của Excel
+  // Thứ tự PHẢI khớp với cột "ViTri" (0,1,2,3,4) trong sheet DanhMuc của Excel
   const PRIZES = [
     { label: "Quà D", color: "#FF3B30" },
     { label: "Quà A", color: "#FFCC00" },
     { label: "Quà B", color: "#34C759" },
-    { label: "Quà C", color: "#007AFF" }
+    { label: "Quà C", color: "#007AFF" },
+    { label: "Chúc may mắn\nlần sau", color: "#8E8E93" }
   ];
 
   // ==========================================================================
@@ -288,7 +289,7 @@
       ctx.rotate(startAngle + sliceAngle / 2);
       ctx.textAlign = "right";
       ctx.fillStyle = "#fff";
-      ctx.font = "bold 16px Segoe UI, sans-serif";
+      ctx.font = "bold 13px Segoe UI, sans-serif";
       ctx.shadowColor = "rgba(0,0,0,0.3)";
       ctx.shadowBlur = 3;
       const lines = prize.label.split("\n");
