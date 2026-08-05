@@ -1,0 +1,396 @@
+<!-- 
+  VÒNG QUAY MAY MẮN - 4 Ô - Phong cách hội chợ
+  ==============================================
+  CÁCH DÙNG:
+  1. Tìm dòng "const FLOW_URL = ..." bên dưới, thay bằng URL thật của Power Automate Flow (HTTP trigger) bạn đã tạo.
+  2. Nếu tên/thứ tự phần thưởng trong Excel (sheet DanhMuc) khác với danh sách PRIZES bên dưới, hãy sửa lại mảng PRIZES cho khớp
+     (ViTri 0,1,2,3 trong Excel PHẢI khớp đúng thứ tự index 0,1,2,3 trong mảng PRIZES).
+  3. Dán toàn bộ đoạn code này vào 1 Web Part "Embed" trên trang SharePoint.
+-->
+
+<div id="vqmm-root">
+  <div class="vqmm-container">
+    <h1 class="vqmm-title">🎉 VÒNG QUAY MAY MẮN 🎉</h1>
+
+    <!-- FORM NHẬP THÔNG TIN -->
+    <div id="vqmm-form-box" class="vqmm-card">
+      <label class="vqmm-label">Họ và tên</label>
+      <input id="vqmm-hoten" class="vqmm-input" type="text" placeholder="Nhập họ tên của bạn" />
+      <label class="vqmm-label">Số điện thoại</label>
+      <input id="vqmm-sdt" class="vqmm-input" type="tel" placeholder="Nhập số điện thoại" />
+      <button id="vqmm-btn-batdau" class="vqmm-btn">Bắt đầu quay 🎯</button>
+      <p id="vqmm-error" class="vqmm-error"></p>
+    </div>
+
+    <!-- VÒNG QUAY -->
+    <div id="vqmm-wheel-box" class="vqmm-card" style="display:none;">
+      <div class="vqmm-wheel-wrap">
+        <div class="vqmm-pointer">▼</div>
+        <canvas id="vqmm-canvas" width="360" height="360"></canvas>
+      </div>
+      <button id="vqmm-btn-quay" class="vqmm-btn vqmm-btn-quay">QUAY NGAY!</button>
+      <p id="vqmm-status" class="vqmm-status"></p>
+    </div>
+
+    <!-- KẾT QUẢ -->
+    <div id="vqmm-result-overlay" class="vqmm-overlay" style="display:none;">
+      <div class="vqmm-result-box">
+        <div class="vqmm-confetti">🎊</div>
+        <h2 id="vqmm-result-title">Chúc mừng!</h2>
+        <p id="vqmm-result-text" class="vqmm-result-text"></p>
+        <p id="vqmm-result-code" class="vqmm-result-code"></p>
+        <button id="vqmm-btn-dong" class="vqmm-btn">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  #vqmm-root {
+    --vqmm-c1: #FF3B30;
+    --vqmm-c2: #FFCC00;
+    --vqmm-c3: #34C759;
+    --vqmm-c4: #007AFF;
+    --vqmm-dark: #2b1055;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 24px 12px;
+    box-sizing: border-box;
+  }
+  #vqmm-root * { box-sizing: border-box; }
+
+  .vqmm-container {
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+  }
+
+  .vqmm-title {
+    font-size: 26px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #FF3B30, #FFCC00, #34C759, #007AFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .vqmm-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 24px 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  }
+
+  .vqmm-label {
+    display: block;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin: 12px 0 6px;
+  }
+
+  .vqmm-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .vqmm-input:focus { border-color: var(--vqmm-c4); }
+
+  .vqmm-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(90deg, #FF3B30, #FF9500);
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .vqmm-btn:active { transform: scale(0.97); }
+  .vqmm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .vqmm-btn-quay {
+    background: linear-gradient(90deg, #34C759, #30D158);
+    font-size: 18px;
+  }
+
+  .vqmm-error {
+    color: #FF3B30;
+    font-size: 13px;
+    font-weight: 600;
+    min-height: 18px;
+    margin-top: 10px;
+  }
+
+  .vqmm-wheel-wrap {
+    position: relative;
+    width: 360px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .vqmm-pointer {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 34px;
+    color: var(--vqmm-dark);
+    z-index: 5;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+  }
+
+  #vqmm-canvas {
+    display: block;
+    margin: 0 auto;
+    border-radius: 50%;
+    box-shadow: 0 0 0 8px #fff, 0 0 0 12px var(--vqmm-c2), 0 10px 30px rgba(0,0,0,0.25);
+  }
+
+  .vqmm-status {
+    margin-top: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    min-height: 20px;
+  }
+
+  .vqmm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20,10,40,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 20px;
+  }
+
+  .vqmm-result-box {
+    background: #fff;
+    border-radius: 24px;
+    padding: 32px 24px;
+    text-align: center;
+    max-width: 340px;
+    width: 100%;
+    animation: vqmm-pop 0.35s ease;
+  }
+
+  @keyframes vqmm-pop {
+    0% { transform: scale(0.7); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .vqmm-confetti { font-size: 48px; margin-bottom: 8px; }
+
+  #vqmm-result-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--vqmm-dark);
+    margin: 0 0 12px;
+  }
+
+  .vqmm-result-text {
+    font-size: 17px;
+    font-weight: 700;
+    color: #FF9500;
+    margin: 0 0 6px;
+  }
+
+  .vqmm-result-code {
+    font-size: 15px;
+    font-weight: 600;
+    color: #007AFF;
+    background: #f0f6ff;
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin: 0;
+  }
+</style>
+
+<script>
+(function () {
+  // ============ CẤU HÌNH — CHỈNH LẠI CHO ĐÚNG VỚI DỰ ÁN CỦA BẠN ============
+
+  // Thay URL này bằng URL HTTP trigger thật của Power Automate Flow
+  const FLOW_URL = "https://prod-00.eastus.logic.azure.com:443/workflows/XXXXXXXX/triggers/manual/paths/invoke?...";
+
+  // Thứ tự PHẢI khớp với cột "ViTri" (0,1,2,3) trong sheet DanhMuc của Excel
+  const PRIZES = [
+    { label: "Ecode\nưu đãi", color: "#FF3B30" },
+    { label: "Quà A",         color: "#FFCC00" },
+    { label: "Quà B",         color: "#34C759" },
+    { label: "Quà C",         color: "#007AFF" }
+  ];
+
+  // ==========================================================================
+
+  const canvas = document.getElementById("vqmm-canvas");
+  const ctx = canvas.getContext("2d");
+  const radius = canvas.width / 2;
+  const sliceAngle = (2 * Math.PI) / PRIZES.length;
+  let currentRotation = 0;
+
+  function drawWheel(rotation) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(radius, radius);
+    ctx.rotate(rotation);
+
+    PRIZES.forEach((prize, i) => {
+      const startAngle = i * sliceAngle;
+      const endAngle = startAngle + sliceAngle;
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, radius - 6, startAngle, endAngle);
+      ctx.closePath();
+      ctx.fillStyle = prize.color;
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Text
+      ctx.save();
+      ctx.rotate(startAngle + sliceAngle / 2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 16px Segoe UI, sans-serif";
+      ctx.shadowColor = "rgba(0,0,0,0.3)";
+      ctx.shadowBlur = 3;
+      const lines = prize.label.split("\n");
+      lines.forEach((line, idx) => {
+        ctx.fillText(line, radius - 24, (idx - (lines.length - 1) / 2) * 18 + 6);
+      });
+      ctx.restore();
+    });
+
+    // Tâm vòng quay
+    ctx.beginPath();
+    ctx.arc(0, 0, 26, 0, 2 * Math.PI);
+    ctx.fillStyle = "#2b1055";
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  drawWheel(0);
+
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+  // Quay animation tới đúng viTriTrung (0..3) mà server đã chọn
+  function spinToIndex(viTriTrung, onDone) {
+    const targetSliceCenter = viTriTrung * sliceAngle + sliceAngle / 2;
+    // con trỏ chỉ ở góc -90deg (đỉnh), nên cần bù lại
+    const pointerAngle = -Math.PI / 2;
+    const extraSpins = 6; // số vòng quay thêm cho đẹp mắt
+    const finalRotation =
+      currentRotation +
+      extraSpins * 2 * Math.PI +
+      (pointerAngle - targetSliceCenter - (currentRotation % (2 * Math.PI)));
+
+    const duration = 4500;
+    const startTime = performance.now();
+    const startRotation = currentRotation;
+    const rotationDelta = finalRotation - startRotation;
+
+    function animate(now) {
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      const eased = easeOutCubic(t);
+      currentRotation = startRotation + rotationDelta * eased;
+      drawWheel(currentRotation);
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        currentRotation = finalRotation;
+        onDone();
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+
+  // ============ LOGIC FORM & GỌI FLOW ============
+
+  const formBox = document.getElementById("vqmm-form-box");
+  const wheelBox = document.getElementById("vqmm-wheel-box");
+  const hoTenInput = document.getElementById("vqmm-hoten");
+  const sdtInput = document.getElementById("vqmm-sdt");
+  const errorEl = document.getElementById("vqmm-error");
+  const statusEl = document.getElementById("vqmm-status");
+  const btnBatDau = document.getElementById("vqmm-btn-batdau");
+  const btnQuay = document.getElementById("vqmm-btn-quay");
+  const btnDong = document.getElementById("vqmm-btn-dong");
+  const overlay = document.getElementById("vqmm-result-overlay");
+  const resultText = document.getElementById("vqmm-result-text");
+  const resultCode = document.getElementById("vqmm-result-code");
+
+  let hoTen = "", sdt = "";
+
+  btnBatDau.addEventListener("click", function () {
+    hoTen = hoTenInput.value.trim();
+    sdt = sdtInput.value.trim();
+    errorEl.textContent = "";
+
+    if (!hoTen) { errorEl.textContent = "Vui lòng nhập họ tên."; return; }
+    if (!/^[0-9]{9,11}$/.test(sdt)) { errorEl.textContent = "Số điện thoại không hợp lệ."; return; }
+
+    formBox.style.display = "none";
+    wheelBox.style.display = "block";
+  });
+
+  btnQuay.addEventListener("click", async function () {
+    btnQuay.disabled = true;
+    statusEl.textContent = "Đang quay, vui lòng chờ...";
+
+    try {
+      const res = await fetch(FLOW_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ HoTen: hoTen, SDT: sdt })
+      });
+      const data = await res.json();
+
+      if (!data.ThanhCong) {
+        statusEl.textContent = data.Message || "Có lỗi xảy ra, vui lòng thử lại.";
+        btnQuay.disabled = false;
+        return;
+      }
+
+      spinToIndex(data.ViTriTrung, function () {
+        const prize = PRIZES[data.ViTriTrung];
+        resultText.textContent = (data.KetQua || prize.label.replace("\n", " "));
+        resultCode.textContent = data.MaCode ? ("Mã của bạn: " + data.MaCode) : "";
+        resultCode.style.display = data.MaCode ? "block" : "none";
+        overlay.style.display = "flex";
+        statusEl.textContent = "";
+      });
+    } catch (err) {
+      statusEl.textContent = "Không thể kết nối máy chủ. Vui lòng thử lại sau.";
+      btnQuay.disabled = false;
+    }
+  });
+
+  btnDong.addEventListener("click", function () {
+    overlay.style.display = "none";
+    btnQuay.disabled = true;
+    btnQuay.textContent = "Đã quay";
+  });
+})();
+</script>
