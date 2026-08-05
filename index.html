@@ -316,7 +316,11 @@
   // Nạp danh sách quà mới nhất từ Excel (qua Flow LayDanhMucQuaTang) mỗi khi trang được mở
   async function napDanhMucQua() {
     try {
-      const res = await fetch(DANH_MUC_URL);
+      const res = await fetch(DANH_MUC_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({})
+      });
       const rows = await res.json();
       // Sắp xếp đúng theo ViTri, gán màu tự động theo bảng màu cố định
       const sorted = rows.slice().sort((a, b) => Number(a.ViTri) - Number(b.ViTri));
