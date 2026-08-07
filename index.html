@@ -22,7 +22,9 @@
 
 <div id="vqmm-root">
   <div class="vqmm-container">
-    <h1 class="vqmm-title">🎉 VÒNG QUAY MAY MẮN 🎉</h1>
+    <p class="vqmm-eyebrow">TỎA SÁNG PHONG CÁCH</p>
+    <p class="vqmm-tagline">TRANG SỨC CHO BẢN LĨNH XỨNG TẦM</p>
+    <h1 class="vqmm-title">VÒNG QUAY MAY MẮN</h1>
 
     <!-- FORM NHẬP THÔNG TIN -->
     <div id="vqmm-form-box" class="vqmm-card">
@@ -47,7 +49,7 @@
     <!-- KẾT QUẢ -->
     <div id="vqmm-result-overlay" class="vqmm-overlay" style="display:none;">
       <div class="vqmm-result-box">
-        <div class="vqmm-confetti">🎊</div>
+        <div class="vqmm-confetti">✦</div>
         <h2 id="vqmm-result-title">Chúc mừng!</h2>
         <p id="vqmm-result-text" class="vqmm-result-text"></p>
         <p id="vqmm-result-code" class="vqmm-result-code"></p>
@@ -61,21 +63,26 @@
   html, body {
     width: 100%;
     min-height: 100%;
+    background: radial-gradient(ellipse at top, #16244a 0%, #0a1128 60%, #060a1a 100%);
   }
 
   #vqmm-root {
-    --vqmm-c1: #FF3B30;
-    --vqmm-c2: #FFCC00;
-    --vqmm-c3: #34C759;
-    --vqmm-c4: #007AFF;
-    --vqmm-dark: #2b1055;
+    --vqmm-navy-1: #24406e;
+    --vqmm-navy-2: #1c3157;
+    --vqmm-navy-3: #14264a;
+    --vqmm-navy-4: #2c4b7f;
+    --vqmm-navy-5: #1a2f57;
+    --vqmm-gold: #d9b774;
+    --vqmm-gold-light: #f3e2b8;
+    --vqmm-dark: #0a1128;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     width: 100%;
     min-height: 100vh;
+    background: radial-gradient(ellipse at top, #16244a 0%, #0a1128 60%, #060a1a 100%);
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 24px 12px;
+    padding: 40px 12px;
     box-sizing: border-box;
   }
   #vqmm-root * { box-sizing: border-box; }
@@ -86,22 +93,39 @@
     text-align: center;
   }
 
-  .vqmm-title {
+  .vqmm-eyebrow {
+    margin: 0;
     font-size: 26px;
     font-weight: 800;
-    background: linear-gradient(90deg, #FF3B30, #FFCC00, #34C759, #007AFF);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    margin-bottom: 20px;
-    letter-spacing: 0.5px;
+    letter-spacing: 2px;
+    color: #fff;
+    text-transform: uppercase;
+  }
+
+  .vqmm-tagline {
+    margin: 4px 0 18px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: var(--vqmm-gold);
+    text-transform: uppercase;
+  }
+
+  .vqmm-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--vqmm-gold-light);
+    margin: 0 0 28px;
+    text-transform: uppercase;
   }
 
   .vqmm-card {
-    background: #fff;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(217,183,116,0.35);
     border-radius: 20px;
     padding: 24px 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    backdrop-filter: blur(4px);
   }
 
   .vqmm-label {
@@ -109,44 +133,49 @@
     text-align: left;
     font-size: 13px;
     font-weight: 600;
-    color: #555;
+    color: var(--vqmm-gold-light);
     margin: 12px 0 6px;
   }
 
   .vqmm-input {
     width: 100%;
     padding: 12px 14px;
-    border: 2px solid #eee;
+    border: 1px solid rgba(217,183,116,0.4);
     border-radius: 12px;
     font-size: 15px;
     outline: none;
+    background: rgba(255,255,255,0.06);
+    color: #fff;
     transition: border-color 0.2s;
   }
-  .vqmm-input:focus { border-color: var(--vqmm-c4); }
+  .vqmm-input::placeholder { color: rgba(255,255,255,0.4); }
+  .vqmm-input:focus { border-color: var(--vqmm-gold); }
 
   .vqmm-btn {
     margin-top: 20px;
     width: 100%;
     padding: 14px;
-    border: none;
-    border-radius: 14px;
-    font-size: 16px;
+    border: 1.5px solid var(--vqmm-gold);
+    border-radius: 999px;
+    font-size: 15px;
     font-weight: 700;
-    color: #fff;
-    background: linear-gradient(90deg, #FF3B30, #FF9500);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--vqmm-gold-light);
+    background: transparent;
     cursor: pointer;
-    transition: transform 0.15s;
+    transition: all 0.2s;
   }
+  .vqmm-btn:hover { background: rgba(217,183,116,0.12); }
   .vqmm-btn:active { transform: scale(0.97); }
-  .vqmm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .vqmm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .vqmm-btn-quay {
-    background: linear-gradient(90deg, #34C759, #30D158);
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .vqmm-error {
-    color: #FF3B30;
+    color: #ff8a8a;
     font-size: 13px;
     font-weight: 600;
     min-height: 18px;
@@ -162,13 +191,13 @@
 
   .vqmm-pointer {
     position: absolute;
-    top: -6px;
+    top: -10px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 34px;
-    color: var(--vqmm-dark);
+    font-size: 30px;
+    color: var(--vqmm-gold-light);
     z-index: 5;
-    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
   }
 
   #vqmm-canvas {
@@ -177,21 +206,21 @@
     max-width: 100%;
     height: auto;
     border-radius: 50%;
-    box-shadow: 0 0 0 8px #fff, 0 0 0 12px var(--vqmm-c2), 0 10px 30px rgba(0,0,0,0.25);
+    box-shadow: 0 0 0 3px var(--vqmm-dark), 0 0 0 6px var(--vqmm-gold), 0 10px 40px rgba(0,0,0,0.5);
   }
 
   .vqmm-status {
     margin-top: 16px;
     font-size: 14px;
     font-weight: 600;
-    color: #666;
+    color: var(--vqmm-gold-light);
     min-height: 20px;
   }
 
   .vqmm-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(20,10,40,0.6);
+    background: rgba(6,10,26,0.75);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -200,7 +229,8 @@
   }
 
   .vqmm-result-box {
-    background: #fff;
+    background: linear-gradient(160deg, #1c3157 0%, #0a1128 100%);
+    border: 1px solid var(--vqmm-gold);
     border-radius: 24px;
     padding: 32px 24px;
     text-align: center;
@@ -214,30 +244,37 @@
     100% { transform: scale(1); opacity: 1; }
   }
 
-  .vqmm-confetti { font-size: 48px; margin-bottom: 8px; }
+  .vqmm-confetti {
+    font-size: 40px;
+    margin-bottom: 8px;
+    color: var(--vqmm-gold);
+  }
 
   #vqmm-result-title {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--vqmm-dark);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--vqmm-gold-light);
+    text-transform: uppercase;
     margin: 0 0 12px;
   }
 
   .vqmm-result-text {
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 700;
-    color: #FF9500;
+    color: #fff;
     margin: 0 0 6px;
   }
 
   .vqmm-result-code {
     font-size: 15px;
     font-weight: 600;
-    color: #007AFF;
-    background: #f0f6ff;
+    color: var(--vqmm-gold-light);
+    background: rgba(217,183,116,0.12);
+    border: 1px solid rgba(217,183,116,0.3);
     padding: 8px 12px;
     border-radius: 10px;
-    margin: 0;
+    margin: 0 0 8px;
   }
 </style>
 
@@ -251,8 +288,8 @@
   // Thay URL này bằng URL Flow "LayDanhMucQuaTang" (lấy danh sách quà mới nhất từ Excel)
   const DANH_MUC_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/00/workflows/507e4a47292f4d8bb87c8d7c2bda1628/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=YnzBPjVpJQHLdprUu9Y9IDgbEcN2ws-YekcMh0EwZ6c";
 
-  // Bảng màu gán tự động theo thứ tự ViTri — không cần sửa tay khi đổi tên/số lượng quà trong Excel
-  const BANG_MAU = ["#FF3B30", "#FFCC00", "#34C759", "#007AFF", "#8E8E93", "#AF52DE", "#FF9500", "#5AC8FA"];
+  // Bảng màu gán tự động theo thứ tự ViTri — tông navy xen kẽ, đồng bộ với theme sang trọng
+  const BANG_MAU = ["#24406e", "#1a2f57", "#2c4b7f", "#14264a", "#2c4b7f", "#1a2f57", "#24406e", "#14264a"];
 
   // PRIZES sẽ được nạp động từ Excel khi trang tải lên (xem hàm napDanhMucQua bên dưới)
   let PRIZES = [];
@@ -282,17 +319,17 @@
       ctx.closePath();
       ctx.fillStyle = prize.color;
       ctx.fill();
-      ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = "#d9b774";
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       // Text
       ctx.save();
       ctx.rotate(startAngle + sliceAngle / 2);
       ctx.textAlign = "right";
-      ctx.fillStyle = "#fff";
+      ctx.fillStyle = "#f3e2b8";
       ctx.font = "bold 13px Segoe UI, sans-serif";
-      ctx.shadowColor = "rgba(0,0,0,0.3)";
+      ctx.shadowColor = "rgba(0,0,0,0.4)";
       ctx.shadowBlur = 3;
       const lines = prize.label.split("\n");
       lines.forEach((line, idx) => {
@@ -303,11 +340,11 @@
 
     // Tâm vòng quay
     ctx.beginPath();
-    ctx.arc(0, 0, 26, 0, 2 * Math.PI);
-    ctx.fillStyle = "#2b1055";
+    ctx.arc(0, 0, 30, 0, 2 * Math.PI);
+    ctx.fillStyle = "#0a1128";
     ctx.fill();
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = "#d9b774";
+    ctx.lineWidth = 3;
     ctx.stroke();
 
     ctx.restore();
