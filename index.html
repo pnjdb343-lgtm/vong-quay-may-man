@@ -56,7 +56,7 @@
     <div id="vqmm-result-overlay" class="vqmm-overlay" style="display:none;">
       <div class="vqmm-result-box">
         <div class="vqmm-confetti">✦</div>
-        <h2 id="vqmm-result-title">Chúc mừng bạn đã trúng giải:</h2>
+        <h2 id="vqmm-result-title">Chúc mừng bạn đã trúng:</h2>
         <p id="vqmm-result-text" class="vqmm-result-text"></p>
         <p id="vqmm-result-code" class="vqmm-result-code"></p>
         <button id="vqmm-btn-dong" class="vqmm-btn">Đóng</button>
@@ -315,6 +315,7 @@
   // Thay URL này bằng URL HTTP trigger thật của Power Automate Flow (quay thưởng)
   const FLOW_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/19/workflows/853b0f555662457682bd6e7d613d7694/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=peqm4gi5K02SNX3gTgju3tArB0DgcWpBpFnquwdXr4U";
 
+
   // Thay URL này bằng URL Flow "LayDanhMucQuaTang" (lấy danh sách quà mới nhất từ Excel)
   const DANH_MUC_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/00/workflows/507e4a47292f4d8bb87c8d7c2bda1628/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=YnzBPjVpJQHLdprUu9Y9IDgbEcN2ws-YekcMh0EwZ6c";
 
@@ -362,13 +363,13 @@
     const zoneOuter = radius - 12;
     const textZoneWidth = zoneOuter - zoneInner;
     const zoneMid = (zoneInner + zoneOuter) / 2;
-    const MAX_LINES = 5;
-    const MIN_FONT = 12;
+    const MAX_LINES = 6;
+    const MIN_FONT = 15;
 
     // Tính 1 cỡ chữ CHUNG cho tất cả các lát (thay vì mỗi lát tự co giãn riêng lẻ)
     // để nhìn đồng đều — chọn cỡ chữ lớn nhất mà mọi label đều vừa trong số dòng cho phép,
     // nhưng KHÔNG BAO GIỜ nhỏ hơn MIN_FONT để đảm bảo luôn đọc được.
-    let fontSize = 15;
+    let fontSize = 18;
     while (fontSize > MIN_FONT) {
       ctx.font = "bold " + fontSize + "px Segoe UI, sans-serif";
       const fitAll = PRIZES.every((p) => wrapLabel(ctx, p.label, textZoneWidth).length <= MAX_LINES);
@@ -396,8 +397,10 @@
 
       // Text — căn giữa lát bánh theo góc bisector
       const midAngle = startAngle + sliceAngle / 2;
-      // Chuẩn hóa góc về [0, 2*PI) để biết lát đang ở nửa trái hay nửa phải của vòng tròn
-      const normalized = ((midAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      // Góc thực tế trên MÀN HÌNH = góc lát + góc mà cả vòng quay đã xoay tới (rotation)
+      const goc_thuc_te = midAngle + rotation;
+      // Chuẩn hóa góc về [0, 2*PI) để biết lát đang ở nửa trái hay nửa phải của vòng tròn (trên màn hình)
+      const normalized = ((goc_thuc_te % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
       // Nửa trái (90°-270° tính từ trục ngang) thì chữ sẽ bị lộn ngược nếu không bù thêm 180°
       const isLeftHalf = normalized > Math.PI / 2 && normalized < (3 * Math.PI) / 2;
 
