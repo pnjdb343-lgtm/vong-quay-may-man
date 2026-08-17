@@ -56,7 +56,7 @@
     <div id="vqmm-result-overlay" class="vqmm-overlay" style="display:none;">
       <div class="vqmm-result-box">
         <div class="vqmm-confetti">✦</div>
-        <h2 id="vqmm-result-title">Chúc mừng bạn đã trúng!</h2>
+        <h2 id="vqmm-result-title">Chúc mừng!</h2>
         <p id="vqmm-result-text" class="vqmm-result-text"></p>
         <p id="vqmm-result-code" class="vqmm-result-code"></p>
         <button id="vqmm-btn-dong" class="vqmm-btn">Đóng</button>
@@ -312,11 +312,12 @@
 (function () {
   // ============ CẤU HÌNH — CHỈNH LẠI CHO ĐÚNG VỚI DỰ ÁN CỦA BẠN ============
 
-    // Thay URL này bằng URL HTTP trigger thật của Power Automate Flow (quay thưởng)
+  // Thay URL này bằng URL HTTP trigger thật của Power Automate Flow (quay thưởng)
   const FLOW_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/19/workflows/853b0f555662457682bd6e7d613d7694/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=peqm4gi5K02SNX3gTgju3tArB0DgcWpBpFnquwdXr4U";
 
   // Thay URL này bằng URL Flow "LayDanhMucQuaTang" (lấy danh sách quà mới nhất từ Excel)
   const DANH_MUC_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/00/workflows/507e4a47292f4d8bb87c8d7c2bda1628/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=YnzBPjVpJQHLdprUu9Y9IDgbEcN2ws-YekcMh0EwZ6c";
+
 
   // Bảng màu gán tự động theo thứ tự ViTri — tông navy xen kẽ, đồng bộ với theme sang trọng
   const BANG_MAU = ["#24406e", "#1a2f57", "#2c4b7f", "#14264a", "#2c4b7f", "#1a2f57", "#24406e", "#14264a"];
@@ -362,6 +363,19 @@
     const zoneOuter = radius - 20;
     const textZoneWidth = zoneOuter - zoneInner;
     const zoneMid = (zoneInner + zoneOuter) / 2;
+    const MAX_LINES = 4;
+
+    // Tính 1 cỡ chữ CHUNG cho tất cả các lát (thay vì mỗi lát tự co giãn riêng lẻ)
+    // để nhìn đồng đều — chọn cỡ chữ lớn nhất mà mọi label đều vừa trong số dòng cho phép.
+    let fontSize = 13;
+    while (fontSize > 8) {
+      ctx.font = "bold " + fontSize + "px Segoe UI, sans-serif";
+      const fitAll = PRIZES.every((p) => wrapLabel(ctx, p.label, textZoneWidth).length <= MAX_LINES);
+      if (fitAll) break;
+      fontSize -= 1;
+    }
+    ctx.font = "bold " + fontSize + "px Segoe UI, sans-serif";
+    const lineHeight = fontSize + 5;
 
     PRIZES.forEach((prize, i) => {
       const startAngle = i * sliceAngle;
@@ -377,27 +391,24 @@
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Text
+      // Text — căn giữa lát bánh theo góc bisector
+      const midAngle = startAngle + sliceAngle / 2;
+      // Chuẩn hóa góc về [0, 2*PI) để biết lát đang ở nửa trái hay nửa phải của vòng tròn
+      const normalized = ((midAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      // Nửa trái (90°-270° tính từ trục ngang) thì chữ sẽ bị lộn ngược nếu không bù thêm 180°
+      const isLeftHalf = normalized > Math.PI / 2 && normalized < (3 * Math.PI) / 2;
+
       ctx.save();
-      ctx.rotate(startAngle + sliceAngle / 2);
+      ctx.rotate(midAngle + (isLeftHalf ? Math.PI : 0));
       ctx.textAlign = "center";
       ctx.fillStyle = "#f3e2b8";
       ctx.shadowColor = "rgba(0,0,0,0.4)";
       ctx.shadowBlur = 3;
 
-      // Thử cỡ chữ giảm dần nếu chữ vẫn quá 3 dòng ở cỡ mặc định
-      let fontSize = 13;
-      let lines = [];
-      while (fontSize >= 9) {
-        ctx.font = "bold " + fontSize + "px Segoe UI, sans-serif";
-        lines = wrapLabel(ctx, prize.label, textZoneWidth);
-        if (lines.length <= 3) break;
-        fontSize -= 1;
-      }
-      ctx.font = "bold " + fontSize + "px Segoe UI, sans-serif";
-      const lineHeight = fontSize + 5;
+      const lines = wrapLabel(ctx, prize.label, textZoneWidth);
+      const drawX = isLeftHalf ? -zoneMid : zoneMid;
       lines.forEach((line, idx) => {
-        ctx.fillText(line, zoneMid, (idx - (lines.length - 1) / 2) * lineHeight + fontSize / 2);
+        ctx.fillText(line, drawX, (idx - (lines.length - 1) / 2) * lineHeight + fontSize / 2);
       });
       ctx.restore();
     });
