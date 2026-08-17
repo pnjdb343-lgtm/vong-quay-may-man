@@ -283,7 +283,7 @@
   // ============ CẤU HÌNH — CHỈNH LẠI CHO ĐÚNG VỚI DỰ ÁN CỦA BẠN ============
 
   // Thay URL này bằng URL HTTP trigger thật của Power Automate Flow (quay thưởng)
-  const FLOW_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/19/workflows/853b0f555662457682bd6e7d613d7694/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=peqm4gi5K02SNX3gTgju3tArB0DgcWpBpFnquwdXr4U";
+    const FLOW_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/19/workflows/853b0f555662457682bd6e7d613d7694/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=peqm4gi5K02SNX3gTgju3tArB0DgcWpBpFnquwdXr4U";
 
   // Thay URL này bằng URL Flow "LayDanhMucQuaTang" (lấy danh sách quà mới nhất từ Excel)
   const DANH_MUC_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/00/workflows/507e4a47292f4d8bb87c8d7c2bda1628/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=YnzBPjVpJQHLdprUu9Y9IDgbEcN2ws-YekcMh0EwZ6c";
@@ -302,12 +302,36 @@
   function getSliceAngle() { return (2 * Math.PI) / PRIZES.length; }
   let currentRotation = 0;
 
+  // Tự động xuống dòng: bẻ chuỗi thành nhiều dòng sao cho mỗi dòng không vượt quá maxWidth (px)
+  function wrapLabel(ctx, text, maxWidth) {
+    const words = text.split(" ");
+    const lines = [];
+    let current = "";
+    words.forEach((word) => {
+      const test = current ? current + " " + word : word;
+      if (ctx.measureText(test).width > maxWidth && current) {
+        lines.push(current);
+        current = word;
+      } else {
+        current = test;
+      }
+    });
+    if (current) lines.push(current);
+    return lines;
+  }
+
   function drawWheel(rotation) {
     const sliceAngle = getSliceAngle();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(radius, radius);
     ctx.rotate(rotation);
+
+    // Vùng chữ khả dụng từ tâm ra viền (trừ khoảng trống ở tâm và lề ngoài)
+    const zoneInner = 46;
+    const zoneOuter = radius - 20;
+    const textZoneWidth = zoneOuter - zoneInner;
+    const zoneMid = (zoneInner + zoneOuter) / 2;
 
     PRIZES.forEach((prize, i) => {
       const startAngle = i * sliceAngle;
@@ -326,14 +350,24 @@
       // Text
       ctx.save();
       ctx.rotate(startAngle + sliceAngle / 2);
-      ctx.textAlign = "right";
+      ctx.textAlign = "center";
       ctx.fillStyle = "#f3e2b8";
-      ctx.font = "bold 13px Segoe UI, sans-serif";
       ctx.shadowColor = "rgba(0,0,0,0.4)";
       ctx.shadowBlur = 3;
-      const lines = prize.label.split("\n");
+
+      // Thử cỡ chữ giảm dần nếu chữ vẫn quá 3 dòng ở cỡ mặc định
+      let fontSize = 13;
+      let lines = [];
+      while (fontSize >= 9) {
+        ctx.font = "bold " + fontSize + "px Segoe UI, sans-serif";
+        lines = wrapLabel(ctx, prize.label, textZoneWidth);
+        if (lines.length <= 3) break;
+        fontSize -= 1;
+      }
+      ctx.font = "bold " + fontSize + "px Segoe UI, sans-serif";
+      const lineHeight = fontSize + 5;
       lines.forEach((line, idx) => {
-        ctx.fillText(line, radius - 24, (idx - (lines.length - 1) / 2) * 18 + 6);
+        ctx.fillText(line, zoneMid, (idx - (lines.length - 1) / 2) * lineHeight + fontSize / 2);
       });
       ctx.restore();
     });
