@@ -364,12 +364,12 @@
     const textZoneWidth = zoneOuter - zoneInner;
     const zoneMid = (zoneInner + zoneOuter) / 2;
     const MAX_LINES = 6;
-    const MIN_FONT = 15;
+    const MIN_FONT = 13;
 
     // Tính 1 cỡ chữ CHUNG cho tất cả các lát (thay vì mỗi lát tự co giãn riêng lẻ)
     // để nhìn đồng đều — chọn cỡ chữ lớn nhất mà mọi label đều vừa trong số dòng cho phép,
     // nhưng KHÔNG BAO GIỜ nhỏ hơn MIN_FONT để đảm bảo luôn đọc được.
-    let fontSize = 18;
+    let fontSize = 16;
     while (fontSize > MIN_FONT) {
       ctx.font = "bold " + fontSize + "px Segoe UI, sans-serif";
       const fitAll = PRIZES.every((p) => wrapLabel(ctx, p.label, textZoneWidth).length <= MAX_LINES);
