@@ -46,7 +46,7 @@
     <div id="vqmm-wheel-box" class="vqmm-card" style="display:none;">
       <div class="vqmm-wheel-wrap">
         <div class="vqmm-pointer">▼</div>
-        <canvas id="vqmm-canvas" width="360" height="360"></canvas>
+        <canvas id="vqmm-canvas" width="420" height="420"></canvas>
       </div>
       <button id="vqmm-btn-quay" class="vqmm-btn vqmm-btn-quay" disabled>Đang tải quà...</button>
       <p id="vqmm-status" class="vqmm-status"></p>
@@ -214,7 +214,7 @@
 
   .vqmm-wheel-wrap {
     position: relative;
-    width: 360px;
+    width: 420px;
     max-width: 100%;
     margin: 0 auto;
   }
@@ -318,7 +318,6 @@
   // Thay URL này bằng URL Flow "LayDanhMucQuaTang" (lấy danh sách quà mới nhất từ Excel)
   const DANH_MUC_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/00/workflows/507e4a47292f4d8bb87c8d7c2bda1628/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=YnzBPjVpJQHLdprUu9Y9IDgbEcN2ws-YekcMh0EwZ6c";
 
-
   // Bảng màu gán tự động theo thứ tự ViTri — tông navy xen kẽ, đồng bộ với theme sang trọng
   const BANG_MAU = ["#24406e", "#1a2f57", "#2c4b7f", "#14264a", "#2c4b7f", "#1a2f57", "#24406e", "#14264a"];
 
@@ -359,21 +358,25 @@
     ctx.rotate(rotation);
 
     // Vùng chữ khả dụng từ tâm ra viền (trừ khoảng trống ở tâm và lề ngoài)
-    const zoneInner = 46;
-    const zoneOuter = radius - 20;
+    const zoneInner = 50;
+    const zoneOuter = radius - 12;
     const textZoneWidth = zoneOuter - zoneInner;
     const zoneMid = (zoneInner + zoneOuter) / 2;
-    const MAX_LINES = 4;
+    const MAX_LINES = 5;
+    const MIN_FONT = 12;
 
     // Tính 1 cỡ chữ CHUNG cho tất cả các lát (thay vì mỗi lát tự co giãn riêng lẻ)
-    // để nhìn đồng đều — chọn cỡ chữ lớn nhất mà mọi label đều vừa trong số dòng cho phép.
-    let fontSize = 13;
-    while (fontSize > 8) {
+    // để nhìn đồng đều — chọn cỡ chữ lớn nhất mà mọi label đều vừa trong số dòng cho phép,
+    // nhưng KHÔNG BAO GIỜ nhỏ hơn MIN_FONT để đảm bảo luôn đọc được.
+    let fontSize = 15;
+    while (fontSize > MIN_FONT) {
       ctx.font = "bold " + fontSize + "px Segoe UI, sans-serif";
       const fitAll = PRIZES.every((p) => wrapLabel(ctx, p.label, textZoneWidth).length <= MAX_LINES);
       if (fitAll) break;
       fontSize -= 1;
     }
+    fontSize = Math.max(fontSize, MIN_FONT);
+    ctx.font = "bold " + fontSize + "px Segoe UI, sans-serif";
     ctx.font = "bold " + fontSize + "px Segoe UI, sans-serif";
     const lineHeight = fontSize + 5;
 
