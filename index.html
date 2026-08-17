@@ -32,6 +32,12 @@
       <input id="vqmm-hoten" class="vqmm-input" type="text" placeholder="Nhập họ tên của bạn" />
       <label class="vqmm-label">Số điện thoại</label>
       <input id="vqmm-sdt" class="vqmm-input" type="tel" placeholder="Nhập số điện thoại" />
+
+      <label class="vqmm-consent">
+        <input id="vqmm-dongy" type="checkbox" />
+        <span>Tôi đồng ý cho PNJ thu thập, xử lý dữ liệu cá nhân của tôi theo quy định tại Thông báo này và theo quy định của pháp luật.</span>
+      </label>
+
       <button id="vqmm-btn-batdau" class="vqmm-btn">Bắt đầu quay 🎯</button>
       <p id="vqmm-error" class="vqmm-error"></p>
     </div>
@@ -174,6 +180,30 @@
     font-size: 16px;
   }
 
+  .vqmm-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 16px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .vqmm-consent input[type="checkbox"] {
+    margin-top: 3px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    accent-color: #d9b774;
+    cursor: pointer;
+  }
+
+  .vqmm-consent span {
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.75);
+  }
+
   .vqmm-error {
     color: #ff8a8a;
     font-size: 13px;
@@ -282,8 +312,8 @@
 (function () {
   // ============ CẤU HÌNH — CHỈNH LẠI CHO ĐÚNG VỚI DỰ ÁN CỦA BẠN ============
 
-  // Thay URL này bằng URL HTTP trigger thật của Power Automate Flow (quay thưởng)
-    const FLOW_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/19/workflows/853b0f555662457682bd6e7d613d7694/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=peqm4gi5K02SNX3gTgju3tArB0DgcWpBpFnquwdXr4U";
+    // Thay URL này bằng URL HTTP trigger thật của Power Automate Flow (quay thưởng)
+  const FLOW_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/19/workflows/853b0f555662457682bd6e7d613d7694/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=peqm4gi5K02SNX3gTgju3tArB0DgcWpBpFnquwdXr4U";
 
   // Thay URL này bằng URL Flow "LayDanhMucQuaTang" (lấy danh sách quà mới nhất từ Excel)
   const DANH_MUC_URL = "https://default6ea838f0f529455e9738147060990b.55.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/00/workflows/507e4a47292f4d8bb87c8d7c2bda1628/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=YnzBPjVpJQHLdprUu9Y9IDgbEcN2ws-YekcMh0EwZ6c";
@@ -450,6 +480,7 @@
   const wheelBox = document.getElementById("vqmm-wheel-box");
   const hoTenInput = document.getElementById("vqmm-hoten");
   const sdtInput = document.getElementById("vqmm-sdt");
+  const dongYInput = document.getElementById("vqmm-dongy");
   const errorEl = document.getElementById("vqmm-error");
   const statusEl = document.getElementById("vqmm-status");
   const btnBatDau = document.getElementById("vqmm-btn-batdau");
@@ -468,6 +499,7 @@
 
     if (!hoTen) { errorEl.textContent = "Vui lòng nhập họ tên."; return; }
     if (!/^[0-9]{9,11}$/.test(sdt)) { errorEl.textContent = "Số điện thoại không hợp lệ."; return; }
+    if (!dongYInput.checked) { errorEl.textContent = "Vui lòng đồng ý điều khoản thu thập dữ liệu cá nhân để tiếp tục."; return; }
 
     formBox.style.display = "none";
     wheelBox.style.display = "block";
