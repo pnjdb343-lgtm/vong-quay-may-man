@@ -38,6 +38,13 @@
         <span>Tôi đồng ý cho PNJ thu thập, xử lý dữ liệu cá nhân của tôi theo quy định tại <a href="https://www.pnj.com.vn/chinh-sach-bao-hanh-va-thu-doi.html/?position=floor&utm_lp=item8&ref=mancode-by-pnj_default_1" target="_blank" rel="noopener" class="vqmm-link">Thông báo này</a> và theo quy định của pháp luật.</span>
       </label>
 
+      <div class="vqmm-captcha-row">
+        <canvas id="vqmm-captcha-canvas" width="150" height="48"></canvas>
+        <button type="button" id="vqmm-captcha-refresh" class="vqmm-captcha-refresh" title="Đổi mã khác">⟳</button>
+      </div>
+      <input id="vqmm-captcha-input" class="vqmm-input" type="text" placeholder="Nhập mã xác nhận ở trên" style="margin-top:10px;" maxlength="6" />
+
+      
       <button id="vqmm-btn-batdau" class="vqmm-btn">Bắt đầu quay 🎯</button>
       <p id="vqmm-error" class="vqmm-error"></p>
     </div>
@@ -211,6 +218,34 @@
   .vqmm-link:hover {
     color: var(--vqmm-gold-light);
   }
+  .vqmm-captcha-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+#vqmm-captcha-canvas {
+  border: 1px solid rgba(217,183,116,0.4);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+}
+
+.vqmm-captcha-refresh {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 1px solid rgba(217,183,116,0.4);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--vqmm-gold-light);
+  font-size: 18px;
+  cursor: pointer;
+}
+.vqmm-captcha-refresh:hover {
+  background: rgba(217,183,116,0.12);
+}
+  
   .vqmm-error {
     color: #ff8a8a;
     font-size: 13px;
@@ -512,7 +547,60 @@
   const overlay = document.getElementById("vqmm-result-overlay");
   const resultText = document.getElementById("vqmm-result-text");
   const resultCode = document.getElementById("vqmm-result-code");
+  // ============ CAPTCHA — nhập mã trong ảnh ============
+const captchaCanvas = document.getElementById("vqmm-captcha-canvas");
+const captchaCtx = captchaCanvas.getContext("2d");
+const captchaInput = document.getElementById("vqmm-captcha-input");
+const captchaRefreshBtn = document.getElementById("vqmm-captcha-refresh");
+let maCaptchaHienTai = "";
 
+function taoMaCaptcha() {
+  const kyTu = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // bỏ ký tự dễ nhầm: 0,O,1,I
+  let ma = "";
+  for (let i = 0; i < 5; i++) ma += kyTu[Math.floor(Math.random() * kyTu.length)];
+  return ma;
+}
+
+function veCaptcha() {
+  maCaptchaHienTai = taoMaCaptcha();
+  captchaCtx.clearRect(0, 0, captchaCanvas.width, captchaCanvas.height);
+  captchaCtx.fillStyle = "#0a1128";
+  captchaCtx.fillRect(0, 0, captchaCanvas.width, captchaCanvas.height);
+
+  // Vẽ vài đường nhiễu cho khó đọc bằng máy
+  for (let i = 0; i < 4; i++) {
+    captchaCtx.strokeStyle = "rgba(217,183,116,0.35)";
+    captchaCtx.beginPath();
+    captchaCtx.moveTo(Math.random() * captchaCanvas.width, Math.random() * captchaCanvas.height);
+    captchaCtx.lineTo(Math.random() * captchaCanvas.width, Math.random() * captchaCanvas.height);
+    captchaCtx.stroke();
+  }
+
+  // Vẽ từng ký tự, xoay nhẹ ngẫu nhiên
+  const charWidth = captchaCanvas.width / (maCaptchaHienTai.length + 1);
+  maCaptchaHienTai.split("").forEach((ch, i) => {
+    captchaCtx.save();
+    const x = charWidth * (i + 1);
+    const y = captchaCanvas.height / 2 + (Math.random() * 8 - 4);
+    captchaCtx.translate(x, y);
+    captchaCtx.rotate((Math.random() * 0.5 - 0.25));
+    captchaCtx.font = "bold 24px Segoe UI, sans-serif";
+    captchaCtx.textAlign = "center";
+    captchaCtx.textBaseline = "middle";
+    captchaCtx.fillStyle = "#f3e2b8";
+    captchaCtx.fillText(ch, 0, 0);
+    captchaCtx.restore();
+  });
+}
+
+captchaRefreshBtn.addEventListener("click", function () {
+  veCaptcha();
+  captchaInput.value = "";
+});
+
+veCaptcha(); // vẽ mã lần đầu khi trang tải
+</script>
+  
   let hoTen = "", sdt = "";
   // Đọc tham số chi nhánh từ URL, VD: ...?cn=LongBien — dùng chung 1 trang cho mọi chi nhánh
   const chiNhanh = new URLSearchParams(window.location.search).get("cn") || "KhongXacDinh";
@@ -525,7 +613,12 @@
     if (!hoTen) { errorEl.textContent = "Vui lòng nhập họ tên."; return; }
     if (!/^[0-9]{9,11}$/.test(sdt)) { errorEl.textContent = "Số điện thoại không hợp lệ."; return; }
     if (!dongYInput.checked) { errorEl.textContent = "Vui lòng đồng ý điều khoản thu thập dữ liệu cá nhân để tiếp tục."; return; }
-
+    if (captchaInput.value.trim().toUpperCase() !== maCaptchaHienTai) {
+  errorEl.textContent = "Mã xác nhận không đúng, vui lòng thử lại.";
+  veCaptcha();
+  captchaInput.value = "";
+  return;
+}
     formBox.style.display = "none";
     wheelBox.style.display = "block";
   });
